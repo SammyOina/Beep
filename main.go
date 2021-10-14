@@ -1,7 +1,7 @@
 package main
 
 import (
-	search "Beep/search"
+	"Beep/search"
 	"fmt"
 )
 
