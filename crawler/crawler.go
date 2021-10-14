@@ -1,23 +1,24 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
-	"net/url"
+	"io/ioutil"
 	"strings"
 
 	"github.com/gocolly/colly"
 )
 
 type page struct {
-	Title string
-	Url   url.URL
+	Title string `xml:"title"`
+	Url   string `xml:"url"`
 }
 
 func main() {
 	pages := []page{}
 	c := colly.NewCollector(
 		// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
-		colly.AllowedDomains("ses.jkuat.ac.ke"),
+		colly.AllowedDomains("qualislabs.co.ke"),
 	)
 
 	// On every a element which has href attribute call callback
@@ -34,7 +35,8 @@ func main() {
 		title = strings.Replace(title, "\n", "", -1)
 		title = strings.Replace(title, "\t", "", -1)
 		fmt.Printf("Page Title: %q\n", title)
-		currentPage := page{Url: *e.Request.URL, Title: title}
+		URL := e.Request.URL.Host + "" + e.Request.URL.Path
+		currentPage := page{Url: e.Request.AbsoluteURL(URL), Title: title}
 		pages = append(pages, currentPage)
 	})
 
@@ -44,6 +46,8 @@ func main() {
 	})
 
 	// Start scraping on
-	c.Visit("https://ses.jkuat.ac.ke/")
-	fmt.Println(len(pages))
+	c.Visit("https://qualislabs.co.ke/")
+	file, _ := xml.MarshalIndent(pages, "", " ")
+
+	_ = ioutil.WriteFile("collectedPages.xml", file, 0644)
 }
